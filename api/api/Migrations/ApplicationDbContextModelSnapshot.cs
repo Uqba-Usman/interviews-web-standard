@@ -58,6 +58,9 @@ namespace api.Migrations
                     b.Property<Guid>("TagId")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("TaskId", "TagId");
 
                     b.HasIndex("TagId");

@@ -7,6 +7,7 @@
 
         public string? Description { get; set; }
 
-        public ICollection<TaskTag> TaskTags { get; set; } = new List<TaskTag>();
+        // Navigation property to the join table
+        public List<TaskTag> TaskTags { get; set; } = new List<TaskTag>();
     }
 }

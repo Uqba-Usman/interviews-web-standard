@@ -5,6 +5,7 @@
         public Guid Id { get; set; }
         public required string Name { get; set; }
 
-        public ICollection<TaskTag> TaskTags { get; set; } = new List<TaskTag>();
+        // Navigation property to the join table
+        public List<TaskTag> TaskTags { get; set; } = new List<TaskTag>();
     }
 }

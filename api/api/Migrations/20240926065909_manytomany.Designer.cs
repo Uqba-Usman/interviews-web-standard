@@ -11,8 +11,8 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240925182547_intialmigration")]
-    partial class intialmigration
+    [Migration("20240926065909_manytomany")]
+    partial class manytomany
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -59,6 +59,9 @@ namespace api.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("TagId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("AddedOn")
                         .HasColumnType("TEXT");
 
                     b.HasKey("TaskId", "TagId");

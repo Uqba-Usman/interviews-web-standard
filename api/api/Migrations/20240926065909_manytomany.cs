@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace api.Migrations
 {
     /// <inheritdoc />
-    public partial class intialmigration : Migration
+    public partial class manytomany : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -41,7 +41,8 @@ namespace api.Migrations
                 columns: table => new
                 {
                     TaskId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TagId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    TagId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AddedOn = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
