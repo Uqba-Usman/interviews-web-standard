@@ -8,7 +8,7 @@ namespace api.Data
         public ApplicationDbContext(DbContextOptions options) : base(options) {
 
         }
-
+        //Defining propertes
         public DbSet<Tag> Tags { get; set; }
 
         public DbSet<Models.Entities.Task> Tasks { get; set; }
