@@ -7,6 +7,9 @@ export default defineNuxtConfig({
       apiUrl:'https://localhost:7054',      
     }
   },
+  css: [
+    'vue-multiselect/dist/vue-multiselect.min.css' // Add this line
+  ],
   app: {
     head: {
       link: [

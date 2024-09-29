@@ -10,10 +10,12 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "nuxt": "^3.13.0",
     "sweetalert2": "^11.14.1",
     "vue": "latest",
+    "vue-multiselect": "^3.1.0",
     "vue-router": "latest"
   }
 }
