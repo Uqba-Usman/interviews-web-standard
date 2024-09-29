@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     }
   },
   css: [
-    'vue-multiselect/dist/vue-multiselect.min.css' // Add this line
+    'vue-multiselect/dist/vue-multiselect.min.css' 
   ],
   app: {
     head: {
@@ -26,4 +26,7 @@ export default defineNuxtConfig({
       ]
     }
   },
+  plugins: [
+    '~/plugins/fontawesome.client.js',
+  ],
 })

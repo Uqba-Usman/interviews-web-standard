@@ -26,7 +26,7 @@
                   <button @click="openTagsModal(task)" class="show-tags-btn">Show Tags</button>
                 </td>
                 <td>
-                  <NuxtLink :to="`/show/${task.id}`" class="btn btn-icon">
+                  <NuxtLink :to="`/tasks/show/${task.id}`" class="btn btn-icon">
                     <img src="/open.png" alt="Show" class="icon" />
                   </NuxtLink>
                   <NuxtLink :to="`/edit/${task.id}`" class="btn btn-icon mx-1">
