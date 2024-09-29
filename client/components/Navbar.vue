@@ -1,10 +1,13 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg w-100" style="background-color: #052e82;">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/">Tasks</a>
-        <a class="navbar-brand" href="/tags">Tags</a>
+       
+        <a class="navbar-brand text-logo" href="/">
+        Infineon
+      </a>
+  
         <button
-          class="navbar-toggler"
+          class="navbar-toggler "
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
@@ -14,12 +17,49 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
+       
         <div class="collapse navbar-collapse" id="navbarNav">
-         
+          <ul class="navbar-nav ms-auto pe-4">
+            <li class="nav-item">
+              <a  class="nav-link text-white button-hover" href="/">Tasks</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white button-hover" href="/tags">Tags</a>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
   </template>
-  
 
-  
+
+<style>
+
+.text-logo {
+  font-weight: 700; 
+  font-size: 1.8rem;
+  color: white; 
+  letter-spacing: 1px; 
+  text-transform: lowercase; 
+}
+ 
+.navbar-toggler {
+  border-color: white; 
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='white' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E"); 
+}
+
+.button-hover {
+  padding: 10px 10px; 
+  border-radius: 5px; 
+  transition: background-color 0.3s ease, color 0.3s ease; 
+  color: white
+}
+
+.button-hover:hover {
+  background-color: white; 
+  color: #052e82 !important;; 
+}
+</style>
