@@ -23,7 +23,7 @@
           </div>
 
           <div class="task-detail-section">
-            <h4 class="detail-heading">Tags</h4>
+            <h4 class="detail-heading">Assigned Tags</h4>
             <div class="tag-chips">
               <span v-if="!task.tags || task.tags.length === 0">
                 No tags assigned to this task.

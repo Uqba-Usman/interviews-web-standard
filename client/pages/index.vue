@@ -5,7 +5,7 @@
           <h2 class="task-manager-title">Tasks</h2>
         </div>
         <div class="col text-end">
-          <NuxtLink to="/" class="btn btn-primary add-task-btn">+</NuxtLink>
+          <NuxtLink to="/tasks/create" class="btn btn-primary add-task-btn">+</NuxtLink>
         </div>
       </div>
   
