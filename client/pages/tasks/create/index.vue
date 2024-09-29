@@ -53,7 +53,7 @@
                 :close-on-select="false"
                 :clear-on-select="false"
                 :preserve-search="true"
-                placeholder="Pick some tags"
+                placeholder="Assign tags"
                 label="name"
                 track-by="id"
                 class="mb-3"
