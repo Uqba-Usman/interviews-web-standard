@@ -22,7 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        policy => policy.WithOrigins("http://localhost:3000") // Add allowed origins
+        policy => policy.WithOrigins("http://localhost:3000", "http://localhost:3001") // Add allowed origins
                         .AllowAnyMethod()                  // Allows any HTTP method (GET, POST, etc.)
                         .AllowAnyHeader()                  // Allows any headers
                         .AllowCredentials());              // Allows credentials (if required)

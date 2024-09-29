@@ -28,10 +28,10 @@ namespace api.Controllers
             {
                 logger.LogInformation("Fetching all tasks");
 
-                var allTasks = dbContext.Tasks
-                                .Include(t => t.TaskTags)
-                                    .ThenInclude(tt => tt.Tag)
-                                .ToList();
+                var allTasks = dbContext.Tasks.ToList();
+                                //.Include(t => t.TaskTags)
+                                //    .ThenInclude(tt => tt.Tag)
+                                //.ToList();
                 return Ok(allTasks);
             }
             catch (DbUpdateException ex)
@@ -162,6 +162,8 @@ namespace api.Controllers
         {
             try
             {
+                logger.LogInformation("AddTagsToTask a task: {TaskName}", addTagsToTaskDto);
+                logger.LogInformation("AddTagsToTask a task: {id}", id);
                 // Find the task
                 var task = dbContext.Tasks.Include(t => t.TaskTags).FirstOrDefault(t => t.Id == id);
                 if (task == null)
