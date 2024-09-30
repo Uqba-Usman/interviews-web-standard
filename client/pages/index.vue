@@ -31,7 +31,7 @@
               class="clickable-row">
                 <td>{{ task.name }}</td>
                 <td>
-                <span @click="openTagsModal(task)" class="view-tags-text">
+                <span @click="openTagsModal(task)" class="view-tags-text" @click.stop>
                   View Tags
                 </span>
               </td>
@@ -39,10 +39,10 @@
                   <!-- <NuxtLink :to="`/tasks/show/${task.id}`" class="btn-icon">
                     <img src="/open.png" alt="View" class="icon" />
                   </NuxtLink> -->
-                  <NuxtLink :to="`/tasks/edit/${task.id}`" class="btn-icon mx-1">
+                  <NuxtLink :to="`/tasks/edit/${task.id}`" class="btn-icon mx-1" @click.stop>
                     <img src="/edit.png" alt="Edit" class="icon" />
                   </NuxtLink>
-                  <button @click="handleDelete(task.id)" class="btn-icon">
+                  <button @click="handleDelete(task.id)" class="btn-icon" @click.stop>
                     <img src="/bin.png" alt="Delete" class="icon" />
                   </button>
                 </td>
