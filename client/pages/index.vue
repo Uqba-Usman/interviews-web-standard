@@ -68,7 +68,7 @@
           <div class="tag-chips mb-3">
             <span v-if="selectedTask?.tags.length === 0">No tags found.</span>
             <span v-for="tag in selectedTask?.tags" :key="tag.id" class="tag-chip">
-              {{ tag.tag.name }}
+              {{ tag.name }}
             </span>
           </div>
   
@@ -140,7 +140,7 @@
           .then((response) => {
             this.tasks = response.data.$values.map((task) => ({
               ...task,
-              tags: task.taskTags?.$values || [],
+              tags: task.tags?.$values || [],
             }));
           })
           .catch((error) => console.error(error))
@@ -309,5 +309,17 @@
     cursor: pointer;
     color: #052e82;
   }
+
+  .tag-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  background-color: #e0e7ff;
+  border-radius: 15px;
+  margin-right: 5px;
+  font-size: 14px;
+}
+
+
   </style>
   

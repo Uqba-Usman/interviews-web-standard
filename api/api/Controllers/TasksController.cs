@@ -29,20 +29,20 @@ namespace api.Controllers
                 logger.LogInformation("Fetching all tasks");
 
                 var allTasks = dbContext.Tasks
-                            .Include(t => t.TaskTags)
-                            .ThenInclude(tt => tt.Tag)
-                            .Select(task => new TaskWithTagsDto
-                            {
-                                Id = task.Id,
-                                Name = task.Name,
-                                Description = task.Description,
-                                Tags = task.TaskTags.Select(tt => new TagDto
-                                {
-                                    Id = tt.Tag.Id,
-                                    Name = tt.Tag.Name
-                                }).ToList()
-                            })
-                            .ToList();
+                     .Include(t => t.TaskTags)
+                         .ThenInclude(tt => tt.Tag)
+                     .Select(task => new TaskWithTagsDto
+                     {
+                         Id = task.Id,
+                         Name = task.Name,
+                         Description = task.Description,
+                         Tags = task.TaskTags.Select(tt => new TagDto
+                         {
+                             Id = tt.Tag.Id,
+                             Name = tt.Tag.Name
+                         }).ToList()
+                     })
+                     .ToList();
 
                 return Ok(allTasks);
             }
