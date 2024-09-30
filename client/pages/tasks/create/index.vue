@@ -1,14 +1,11 @@
 <template>
   <div class="container top-container">
     <div class="create-task-container">
-      <div class="create-task-header">
-        <!-- <router-link to="/" class="back-icon">
-          <img src="/back-icon.png" alt="Back Icon" />
-        </router-link> -->
+      <div class="create-task-header d-flex align-items-center justify-content-start">
         <button @click="goBack" class="back-icon">
           <img src="/back-icon.png" alt="Back Icon" />
         </button>
-        <h2 class="text-center">Create New Task</h2>
+        <h2 class="text-center flex-grow-1">Create New Task</h2>
       </div>
 
       <div class="card create-task-card">
@@ -43,7 +40,7 @@
             <div class="form-group">
               <label for="tags" class="form-label">Tags</label>
               <div class="tag-chips mb-3">
-                <span v-if="task.tags.length === 0">No tags assigned yet.</span>
+                <!-- <span v-if="task.tags.length === 0">No tags assigned yet.</span> -->
                 <span v-for="tag in task.tags" :key="tag.id" class="tag-chip">{{ tag.name }}</span>
               </div>
               <multiselect
@@ -175,25 +172,36 @@ export default {
 </script>
 
 <style scoped>
-/* Add your styles here, keeping in line with your existing styles */
+/* Layout adjustments to remove borders and add shadows */
+/* Main container adjustments */
 .top-container {
   margin-top: 5rem;
 }
 
+/* Header adjustment for flex alignment */
 .create-task-header {
-  background: linear-gradient(135deg, #3a3f6a, #052e82);
+  display: flex;
+  align-items: center;
+  /* background: linear-gradient(135deg, #3a3f6a, #052e82); */
   color: white;
-  padding: 40px;
+  padding: 20px 40px; /* Added padding for better spacing */
   border-radius: 8px 8px 0 0;
   text-align: center;
   position: relative;
+  margin-bottom: 25px;
+}
+
+/* Flexbox adjustments for positioning */
+.create-task-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #052e82;
+  flex-grow: 1; /* Ensures the text fills available space */
+  text-align: center; /* Ensures the text stays centered */
 }
 
 .back-icon {
-  position: absolute;
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  margin-right: 10px; /* Adds a little space between the button and the text */
   font-size: 24px;
   color: black;
   cursor: pointer;
@@ -205,13 +213,12 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Shadow for the floating effect */
 }
 
 .back-icon:hover {
   background-color: #052e82;
   color: white;
-  border-color: white;
 }
 
 .back-icon img {
@@ -219,34 +226,44 @@ export default {
   height: 20px;
   filter: invert(1);
 }
-
-
+/* Card with shadow and without border */
 .create-task-card {
   margin-top: -20px;
-  border-radius: 0 0 8px 8px;
-  border-top: none;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  border: none; /* No border */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); /* Light shadow */
+  padding: 20px;
+}
+
+/* Form inputs with light shadows and no borders */
+.form-control {
+  border: none; /* No border */
+  border-radius: 8px; /* Slight rounding */
+  box-shadow: 0 12px 18px rgba(0, 0, 0, 0.05); /* Light shadow */
+  padding: 12px 15px; /* Ensure inputs are comfortable to use */
+  margin-bottom: 20px;
 }
 
 .form-label {
-  font-weight: bold;
-  color: #052e82;
+  margin:5px;
 }
 
+/* Save button with shadow */
 .btn-save-task {
   background-color: #052e82;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
+  padding: 12px 20px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Stronger shadow for buttons */
 }
 
 .btn-save-task:hover {
   background-color: #3a3f6a;
 }
 
+/* Tag chips */
 .tag-chips {
   display: flex;
   flex-wrap: wrap;
@@ -259,5 +276,6 @@ export default {
   padding: 8px 12px;
   margin: 4px;
   font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Shadow for tags */
 }
 </style>
