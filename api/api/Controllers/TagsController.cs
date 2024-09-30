@@ -66,9 +66,9 @@ namespace api.Controllers
         {
             try
             {
-                logger.LogInformation("Fetching tasks for tag with Id: {TagId}", id);
+                logger.LogInformation("Fetching tag and its tasks for tag with Id: {TagId}", id);
 
-                // Check if the tag exists and include tasks through TaskTags
+                // Include TaskTags and the associated Tasks when fetching the tag
                 var tag = dbContext.Tags.Include(t => t.TaskTags)
                                         .ThenInclude(tt => tt.Task)
                                         .FirstOrDefault(t => t.Id == id);
@@ -79,17 +79,22 @@ namespace api.Controllers
                     return NotFound();
                 }
 
-                // Map Task entities to TaskDto to avoid circular references
-                var tasksDto = tag.TaskTags.Select(tt => new TaskDto
+                // Map the tag and its tasks to the TagWithTasksDto
+                var tagWithTasksDto = new TagWithTasksDto
                 {
-                    Id = tt.Task.Id,
-                    Name = tt.Task.Name,
-                    Description = tt.Task.Description
-                }).ToList();
+                    Id = tag.Id,
+                    Name = tag.Name,
+                    Tasks = tag.TaskTags.Select(tt => new TaskDto
+                    {
+                        Id = tt.Task.Id,
+                        Name = tt.Task.Name,
+                        Description = tt.Task.Description
+                    }).ToList()
+                };
 
-                logger.LogInformation("Fetched {TaskCount} tasks for tag with Id: {TagId}", tasksDto.Count, id);
+                logger.LogInformation("Fetched tag and {TaskCount} tasks for tag with Id: {TagId}", tagWithTasksDto.Tasks.Count, id);
 
-                return Ok(tasksDto);
+                return Ok(tagWithTasksDto);
             }
             catch (DbUpdateException ex)
             {
