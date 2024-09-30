@@ -1,39 +1,43 @@
 <template>
     <div class="container top-container">
       <div class="edit-task-container">
+        <div class="edit-task-header d-flex align-items-center justify-content-start">
+          <button @click="goBack" class="back-icon">
+            <img src="/back-icon.png" alt="Back Icon" />
+          </button>
+          <h2 class="text-center flex-grow-1">Update Task</h2>
+        </div>
+  
         <div class="card edit-task-card">
-            <div class="edit-task-header">
-        <button @click="goBack" class="back-icon">
-          <img src="/back-icon.png" alt="Back Icon" />
-        </button>
-        <h2 class="text-center">Update Task</h2>
-      </div>
           <div class="card-body">
             <form @submit.prevent="handleSave">
               <div class="form-group">
-                <label for="name" class="form-label">Name</label>
+                <label for="name" class="form-label">Task Name</label>
                 <input
                   v-model="task.name"
                   type="text"
                   class="form-control"
                   id="name"
                   name="name"
+                  placeholder="Enter task name"
                   required
                 />
               </div>
+  
               <div class="form-group">
-                <label for="description" class="form-label">Description</label>
+                <label for="description" class="form-label">Task Description</label>
                 <textarea
                   v-model="task.description"
                   class="form-control"
                   id="description"
                   rows="3"
                   name="description"
+                  placeholder="Enter task description"
                   required
                 ></textarea>
               </div>
+  
               <button
-                @click="handleSave()"
                 :disabled="isSaving"
                 type="submit"
                 class="btn btn-save-task mt-4"
@@ -47,6 +51,7 @@
     </div>
   </template>
   
+
   <script>
   import Swal from 'sweetalert2';
   import { getTask, updateTask } from '~/services/taskService';
@@ -92,10 +97,7 @@
               timer: 1500,
             });
             this.isSaving = false;
-            this.task.name = '';
-            this.task.description = '';
-            this.$router.go(-1);
-
+            this.$router.go(-1); // Go back after saving
           })
           .catch(error => {
             this.isSaving = false;
@@ -107,30 +109,44 @@
             });
           });
       },
+      goBack() {
+        this.$router.go(-1); // Navigate back to the previous page
+      },
     },
   };
   </script>
   
-  <style scoped>
-  .top-container {
-    margin-top: 5rem;
-  }
-  
-  
+
+
+<style scoped>
+/* Main container adjustments */
+.top-container {
+  margin-top: 5rem;
+}
+
+/* Header adjustment for flex alignment */
 .edit-task-header {
-  background: linear-gradient(135deg, #3a3f6a, #052e82);
+  display: flex;
+  align-items: center;
   color: white;
-  padding: 40px;
+  padding: 20px 40px; /* Same padding as Create Task */
   border-radius: 8px 8px 0 0;
   text-align: center;
   position: relative;
+  margin-bottom: 25px;
+}
+
+/* Flexbox adjustments for positioning */
+.edit-task-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #052e82;
+  flex-grow: 1; /* Ensures the text fills available space */
+  text-align: center;
 }
 
 .back-icon {
-  position: absolute;
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  margin-right: 10px; /* Adds space between the button and text */
   font-size: 24px;
   color: black;
   cursor: pointer;
@@ -142,13 +158,12 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Shadow for the floating effect */
 }
 
 .back-icon:hover {
   background-color: #052e82;
   color: white;
-  border-color: white;
 }
 
 .back-icon img {
@@ -157,31 +172,42 @@
   filter: invert(1);
 }
 
-  
-  .card-header {
-    background: linear-gradient(135deg, #3a3f6a, #052e82);
-    color: white;
-    padding: 20px;
-    border-radius: 8px 8px 0 0;
-  }
-  
-  .form-label {
-    font-weight: bold;
-    color: #052e82;
-  }
-  
-  .btn-save-task {
-    background-color: #052e82;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .btn-save-task:hover {
-    background-color: #3a3f6a;
-  }
-  </style>
-  
+/* Card with shadow and no border */
+.edit-task-card {
+  margin-top: -20px;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); /* Light shadow */
+  padding: 20px;
+}
+
+/* Form inputs with light shadows and no borders */
+.form-control {
+  border: none; /* No border */
+  border-radius: 8px; /* Slight rounding */
+  box-shadow: 0 12px 18px rgba(0, 0, 0, 0.05); /* Light shadow */
+  padding: 12px 15px; /* Ensure inputs are comfortable to use */
+  margin-bottom: 20px;
+}
+
+.form-label {
+  margin: 5px;
+  font-weight: bold;
+  color: #052e82;
+}
+
+/* Save button with shadow */
+.btn-save-task {
+  background-color: #052e82;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Stronger shadow for buttons */
+}
+
+.btn-save-task:hover {
+  background-color: #3a3f6a;
+}
+</style>
