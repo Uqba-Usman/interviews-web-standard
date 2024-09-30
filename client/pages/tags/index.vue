@@ -31,10 +31,10 @@
                   <!-- <NuxtLink :to="`/tags/show/${tag.id}`" class="btn-icon">
                     <img src="/open.png" alt="View" class="icon" />
                   </NuxtLink> -->
-                  <NuxtLink :to="`/tags/edit/${tag.id}`" class="btn-icon mx-1">
+                  <NuxtLink :to="`/tags/edit/${tag.id}`" class="btn-icon mx-1" @click.stop>
                     <img src="/edit.png" alt="Edit" class="icon" />
                   </NuxtLink>
-                  <button @click="handleDelete(tag.id)" class="btn-icon">
+                  <button @click="handleDelete(tag.id)" class="btn-icon" @click.stop>
                     <img src="/bin.png" alt="Delete" class="icon" />
                   </button>
                 </td>
