@@ -60,6 +60,45 @@ namespace api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("{id:guid}/tasks")]
+        public IActionResult GetTasksByTagId(Guid id)
+        {
+            try
+            {
+                logger.LogInformation("Fetching tasks for tag with Id: {TagId}", id);
+
+                // Check if the tag exists and include tasks through TaskTags
+                var tag = dbContext.Tags.Include(t => t.TaskTags)
+                                        .ThenInclude(tt => tt.Task)
+                                        .FirstOrDefault(t => t.Id == id);
+
+                if (tag == null)
+                {
+                    logger.LogWarning("Tag with id: {TagId} was not found", id);
+                    return NotFound();
+                }
+
+                // Map Task entities to TaskDto to avoid circular references
+                var tasksDto = tag.TaskTags.Select(tt => new TaskDto
+                {
+                    Id = tt.Task.Id,
+                    Name = tt.Task.Name,
+                    Description = tt.Task.Description
+                }).ToList();
+
+                logger.LogInformation("Fetched {TaskCount} tasks for tag with Id: {TagId}", tasksDto.Count, id);
+
+                return Ok(tasksDto);
+            }
+            catch (DbUpdateException ex)
+            {
+                logger.LogError($"An error occurred while getting tasks for tag {id}: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while getting tasks for the tag.");
+            }
+        }
+
+
         [HttpPost]
         public IActionResult AddTag(AddTagDto addTagDto)
         {
