@@ -3,6 +3,7 @@ using api.Data;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,8 @@ builder.Services.AddCors(options =>
                         .AllowAnyHeader()                  // Allows any headers
                         .AllowCredentials());              // Allows credentials (if required)
 });
+
+builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
 
 var app = builder.Build();
 
@@ -65,6 +68,8 @@ app.UseExceptionHandler(errorApp =>
 
 // Custom exception handling middleware
 //app.UseMiddleware<CustomExceptionHandlerMiddleware>();
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 

@@ -26,7 +26,12 @@ namespace api.Controllers
         {
             try
             {
-                logger.LogInformation("Fetching all tasks");
+                //logger.LogInformation("Fetching all tasks");
+                logger.LogInformation(
+              "Starting Request {RequestMethod} {RequestPath} at {DateTimeUtc}",
+              HttpContext.Request.Method,
+              HttpContext.Request.Path,
+              DateTime.UtcNow);
 
                 var allTasks = dbContext.Tasks
                      .Include(t => t.TaskTags)
