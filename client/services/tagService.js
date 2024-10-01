@@ -3,7 +3,7 @@ export const getTags = () => {
 };
 
 export const getTag = (id) => {
-  return useNuxtApp().$axiosApiClient.get(`/api/Tags/${id}`);
+  return useNuxtApp().$axiosApiClient.get(`/api/Tags/${id}/Tasks`);
 };
 
 export const createTag = (record) => {

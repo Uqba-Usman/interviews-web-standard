@@ -92,12 +92,38 @@ namespace api.Controllers
                     return BadRequest(ModelState);  // Returns validation error messages
                 }
 
+                // Create the new task entity
                 var taskEntity = new Task()
                 {
                     Name = addTaskDto.Name,
                     Description = addTaskDto.Description
                 };
 
+                // Find the tags by their IDs (if provided)
+                var tags = new List<Tag>();
+                if (addTaskDto.TagIds != null && addTaskDto.TagIds.Any())
+                {
+                    tags = dbContext.Tags.Where(tag => addTaskDto.TagIds.Contains(tag.Id)).ToList();
+
+                    // If some tag IDs do not exist, return an error
+                    if (tags.Count != addTaskDto.TagIds.Count)
+                    {
+                        return BadRequest("One or more tags do not exist.");
+                    }
+                }
+
+                // Associate tags with the task via TaskTag
+                foreach (var tag in tags)
+                {
+                    taskEntity.TaskTags.Add(new TaskTag
+                    {
+                        TaskId = taskEntity.Id,
+                        TagId = tag.Id,
+                        AddedOn = DateTime.UtcNow
+                    });
+                }
+
+                // Add the task to the database
                 dbContext.Tasks.Add(taskEntity);
                 dbContext.SaveChanges();
 
