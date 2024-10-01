@@ -136,14 +136,14 @@
   }
   
   .btn-icon {
-  background-color: #041f66; /* Apply background color */
+  background-color: #041f66; 
   border: none;
   border-radius: 5px;
   padding: 8px;
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  width: 40px; /* Ensures a consistent size for the buttons */
+  width: 40px; 
   height: 40px;
   cursor: pointer;
 }
@@ -155,7 +155,7 @@
 .btn-icon img {
   width: 20px;
   height: 20px;
-  filter: invert(1); /* Inverts the color of the icon to white */
+  filter: invert(1); 
 }
 
 .view-tags-text {
@@ -166,7 +166,7 @@
 }
 
 .view-tags-text:hover {
-  color: #305ccc; /* Change color on hover for better feedback */
+  color: #305ccc; 
 }
 
 .clickable-row {

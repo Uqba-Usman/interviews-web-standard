@@ -7,5 +7,7 @@
 
         public string? Description { get; set; }
 
+        public List<Guid> TagIds { get; set; } = new List<Guid>();
+
     }
 }

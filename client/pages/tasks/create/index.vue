@@ -1,7 +1,9 @@
 <template>
   <div class="container top-container">
     <div class="create-task-container">
-      <div class="create-task-header d-flex align-items-center justify-content-start">
+      <div
+        class="create-task-header d-flex align-items-center justify-content-start"
+      >
         <button @click="goBack" class="back-icon">
           <img src="/back-icon.png" alt="Back Icon" />
         </button>
@@ -25,7 +27,9 @@
             </div>
 
             <div class="form-group">
-              <label for="description" class="form-label">Task Description</label>
+              <label for="description" class="form-label"
+                >Task Description</label
+              >
               <textarea
                 v-model="task.description"
                 class="form-control"
@@ -41,7 +45,9 @@
               <label for="tags" class="form-label">Tags</label>
               <div class="tag-chips mb-3">
                 <!-- <span v-if="task.tags.length === 0">No tags assigned yet.</span> -->
-                <span v-for="tag in task.tags" :key="tag.id" class="tag-chip">{{ tag.name }}</span>
+                <span v-for="tag in task.tags" :key="tag.id" class="tag-chip">{{
+                  tag.name
+                }}</span>
               </div>
               <multiselect
                 v-model="selectedTags"
@@ -58,13 +64,17 @@
                 <template #tag="{ option, remove }">
                   <span class="custom__tag">
                     {{ option.name }}
-                    <span class="custom__remove" @click.prevent="remove(option)">❌</span>
+                    <span class="custom__remove" @click.prevent="remove(option)"
+                      >❌</span
+                    >
                   </span>
                 </template>
 
                 <template #noResult>
                   No tags found.
-                  <a href="#" @click.prevent="createTag" class="text-primary">Create new tag</a>
+                  <a href="#" @click.prevent="createTag" class="text-primary"
+                    >Create new tag</a
+                  >
                 </template>
               </multiselect>
             </div>
@@ -84,22 +94,22 @@
 </template>
 
 <script>
-import { createTask } from '~/services/taskService'; // Adjust imports as necessary
-import {  getTags } from '~/services/tagService'; // Adjust imports as necessary
-import Multiselect from 'vue-multiselect';
-import Swal from 'sweetalert2';
+import { createTask } from "~/services/taskService";
+import { getTags } from "~/services/tagService";
+import Multiselect from "vue-multiselect";
+import Swal from "sweetalert2";
 
 export default {
   components: { Multiselect },
   data() {
     return {
       task: {
-        name: '',
-        description: '',
+        name: "",
+        description: "",
         tags: [],
       },
       loading: true,
-      selectedTags: [], // For storing selected tags
+      selectedTags: [],
       tags: [],
       isSaving: false,
     };
@@ -114,10 +124,10 @@ export default {
           this.tags = response.data.$values || [];
         })
         .catch((error) => {
-          console.error('Error fetching tags:', error);
+          console.error("Error fetching tags:", error);
           Swal.fire({
-            icon: 'error',
-            title: 'An Error Occurred!',
+            icon: "error",
+            title: "An Error Occurred!",
             showConfirmButton: false,
             timer: 1500,
           });
@@ -125,26 +135,28 @@ export default {
     },
     handleSave() {
       this.isSaving = true;
-      this.task.tags = this.selectedTags; // Update task tags with selected tags
+      this.task.tagIds = this.selectedTags.map((tag) => tag.id);
+
       createTask(this.task)
         .then(() => {
           Swal.fire({
-            icon: 'success',
-            title: 'Task created successfully!',
+            icon: "success",
+            title: "Task created successfully!",
             showConfirmButton: false,
             timer: 1500,
           });
-          // Reset form
-          this.task = { name: '', description: '', tags: [] };
+
+          this.task = { name: "", description: "", tags: [] };
           this.selectedTags = [];
           this.isSaving = false;
-          // Redirect or perform other actions
+
+          this.$router.go(-1);
         })
         .catch((error) => {
           console.error(error);
           Swal.fire({
-            icon: 'error',
-            title: 'An Error Occurred!',
+            icon: "error",
+            title: "An Error Occurred!",
             showConfirmButton: false,
             timer: 1500,
           });
@@ -152,18 +164,18 @@ export default {
         });
     },
     goBack() {
-      this.$router.go(-1); // Navigate back to the previous page
+      this.$router.go(-1);
     },
     createTag() {
       Swal.fire({
-        title: 'Create new tag',
-        input: 'text',
+        title: "Create new tag",
+        input: "text",
         showCancelButton: true,
         inputValidator: (value) => {
           if (!value) {
-            return 'Tag name cannot be empty!';
+            return "Tag name cannot be empty!";
           }
-          this.tags.push({ id: this.tags.length + 1, name: value }); // Add new tag
+          this.tags.push({ id: this.tags.length + 1, name: value });
         },
       });
     },
@@ -172,36 +184,31 @@ export default {
 </script>
 
 <style scoped>
-/* Layout adjustments to remove borders and add shadows */
-/* Main container adjustments */
 .top-container {
   margin-top: 5rem;
 }
 
-/* Header adjustment for flex alignment */
 .create-task-header {
   display: flex;
   align-items: center;
-  /* background: linear-gradient(135deg, #3a3f6a, #052e82); */
   color: white;
-  padding: 20px 40px; /* Added padding for better spacing */
+  padding: 20px 40px;
   border-radius: 8px 8px 0 0;
   text-align: center;
   position: relative;
   margin-bottom: 25px;
 }
 
-/* Flexbox adjustments for positioning */
 .create-task-header h2 {
   margin: 0;
   font-size: 1.5rem;
   color: #052e82;
-  flex-grow: 1; /* Ensures the text fills available space */
-  text-align: center; /* Ensures the text stays centered */
+  flex-grow: 1;
+  text-align: center;
 }
 
 .back-icon {
-  margin-right: 10px; /* Adds a little space between the button and the text */
+  margin-right: 10px;
   font-size: 24px;
   color: black;
   cursor: pointer;
@@ -213,7 +220,7 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Shadow for the floating effect */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .back-icon:hover {
@@ -226,29 +233,27 @@ export default {
   height: 20px;
   filter: invert(1);
 }
-/* Card with shadow and without border */
+
 .create-task-card {
   margin-top: -20px;
   border-radius: 12px;
-  border: none; /* No border */
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); /* Light shadow */
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   padding: 20px;
 }
 
-/* Form inputs with light shadows and no borders */
 .form-control {
-  border: none; /* No border */
-  border-radius: 8px; /* Slight rounding */
-  box-shadow: 0 12px 18px rgba(0, 0, 0, 0.05); /* Light shadow */
-  padding: 12px 15px; /* Ensure inputs are comfortable to use */
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 12px 18px rgba(0, 0, 0, 0.05);
+  padding: 12px 15px;
   margin-bottom: 20px;
 }
 
 .form-label {
-  margin:5px;
+  margin: 5px;
 }
 
-/* Save button with shadow */
 .btn-save-task {
   background-color: #052e82;
   color: white;
@@ -256,14 +261,13 @@ export default {
   padding: 12px 20px;
   border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Stronger shadow for buttons */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-save-task:hover {
   background-color: #3a3f6a;
 }
 
-/* Tag chips */
 .tag-chips {
   display: flex;
   flex-wrap: wrap;
@@ -276,6 +280,6 @@ export default {
   padding: 8px 12px;
   margin: 4px;
   font-size: 14px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Shadow for tags */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 </style>
