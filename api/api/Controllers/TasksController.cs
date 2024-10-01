@@ -26,6 +26,7 @@ namespace api.Controllers
         {
             try
             {
+                throw new Exception("Test exception");
                 logger.LogInformation("Fetching all tasks");
 
                 var allTasks = dbContext.Tasks

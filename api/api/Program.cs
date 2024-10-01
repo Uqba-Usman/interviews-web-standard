@@ -1,4 +1,7 @@
+using api;
 using api.Data;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -36,6 +39,32 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/problem+json";
+
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+
+        if (exceptionHandlerPathFeature?.Error != null)
+        {
+            var problemDetails = new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "An unexpected error occurred!",
+                Detail = exceptionHandlerPathFeature.Error.Message
+            };
+
+            await context.Response.WriteAsJsonAsync(problemDetails);
+        }
+    });
+});
+
+// Custom exception handling middleware
+//app.UseMiddleware<CustomExceptionHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 
