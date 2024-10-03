@@ -13,188 +13,182 @@ namespace api.Controllers
     public class TagsController : ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
-        private readonly ILogger<TasksController> logger;
+        private readonly ILogger<TagsController> logger;
 
-        public TagsController(ApplicationDbContext dbContext, ILogger<TasksController> logger)
+        // Constructor to initialize the DbContext and Logger
+        public TagsController(ApplicationDbContext dbContext, ILogger<TagsController> logger)
         {
             this.dbContext = dbContext;
             this.logger = logger;
         }
 
+        // GET: api/tags - Retrieve all tags
         [HttpGet]
         public IActionResult GetAllTags()
         {
-            try
-            {
-                logger.LogInformation("Fetching all tags");
-                var allTags = dbContext.Tags.ToList();
-                return Ok(allTags);
-            }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError($"An error occurred while getting all tags: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while getting the tags.");
-            }
+            logger.LogInformation(
+                "Starting Request {RequestMethod} {RequestPath} at {DateTimeUtc}",
+                HttpContext.Request.Method,
+                HttpContext.Request.Path,
+                DateTime.UtcNow);
+
+            // Retrieve all tags from the database
+            var allTags = dbContext.Tags.ToList();
+            
+            logger.LogInformation("Successfully fetched {TagCount} tags.", allTags.Count);
+            return Ok(allTags);
         }
 
+        // GET: api/tags/{id} - Retrieve a specific tag by its ID
         [HttpGet]
         [Route("{id:guid}")]
         public IActionResult GetTagById(Guid id)
         {
-            try
-            {
+            logger.LogInformation("Fetching tag with id: {TagId}", id);
 
-                logger.LogInformation("Fetching tag with id: {TagId}", id);
-                var tag = dbContext.Tags.Find(id);
-                if (tag == null)
+            // Find the tag by its ID
+            var tag = dbContext.Tags.Find(id);
+            if (tag == null)
+            {                
+                logger.LogWarning("Tag with id: {TagId} was not found", id);
+                return NotFound(new ProblemDetails
                 {
-                    logger.LogWarning("Tag with id: {TagId} was not found", id);
-                    return NotFound();
-                }
-                return Ok(tag);
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Tag not found",
+                    Detail = $"No tag found with ID: {id}"
+                });
             }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError($"An error occurred while getting tag by Id: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while getting the single tag.");
-            }
+            
+            logger.LogInformation("Successfully fetched tag with id: {TagId}", id);
+            return Ok(tag);
         }
 
+        // GET: api/tags/{id}/tasks - Retrieve all tasks associated with a specific tag by its ID
         [HttpGet]
         [Route("{id:guid}/tasks")]
         public IActionResult GetTasksByTagId(Guid id)
-        {
-            try
+        {            
+            logger.LogInformation("Fetching tasks associated with tag id: {TagId}", id);
+
+            // Find the tag with its associated tasks
+            var tag = dbContext.Tags.Include(t => t.TaskTags)
+                                    .ThenInclude(tt => tt.Task)
+                                    .FirstOrDefault(t => t.Id == id);
+
+            if (tag == null)
             {
-                logger.LogInformation("Fetching tag and its tasks for tag with Id: {TagId}", id);
-
-                // Include TaskTags and the associated Tasks when fetching the tag
-                var tag = dbContext.Tags.Include(t => t.TaskTags)
-                                        .ThenInclude(tt => tt.Task)
-                                        .FirstOrDefault(t => t.Id == id);
-
-                if (tag == null)
+                logger.LogWarning("Tag with id: {TagId} was not found", id);
+                return NotFound(new ProblemDetails
                 {
-                    logger.LogWarning("Tag with id: {TagId} was not found", id);
-                    return NotFound();
-                }
-
-                // Map the tag and its tasks to the TagWithTasksDto
-                var tagWithTasksDto = new TagWithTasksDto
-                {
-                    Id = tag.Id,
-                    Name = tag.Name,
-                    Tasks = tag.TaskTags.Select(tt => new TaskDto
-                    {
-                        Id = tt.Task.Id,
-                        Name = tt.Task.Name,
-                        Description = tt.Task.Description
-                    }).ToList()
-                };
-
-                logger.LogInformation("Fetched tag and {TaskCount} tasks for tag with Id: {TagId}", tagWithTasksDto.Tasks.Count, id);
-
-                return Ok(tagWithTasksDto);
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Tag not found",
+                    Detail = $"No tag found with ID: {id}"
+                });
             }
-            catch (DbUpdateException ex)
+
+            // Prepare the DTO with the tag's tasks
+            var tagWithTasksDto = new TagWithTasksDto
             {
-                logger.LogError($"An error occurred while getting tasks for tag {id}: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while getting tasks for the tag.");
-            }
+                Id = tag.Id,
+                Name = tag.Name,
+                Tasks = tag.TaskTags.Select(tt => new TaskDto
+                {
+                    Id = tt.Task.Id,
+                    Name = tt.Task.Name,
+                    Description = tt.Task.Description
+                }).ToList()
+            };
+            
+            logger.LogInformation("Successfully fetched {TaskCount} tasks for tag with id: {TagId}", tagWithTasksDto.Tasks.Count, id);
+            return Ok(tagWithTasksDto);
         }
 
-
+        // POST: api/tags - Create a new tag
         [HttpPost]
         public IActionResult AddTag(AddTagDto addTagDto)
         {
-            try
+            logger.LogInformation("Creating a new tag: {TagName}", addTagDto.Name);
+
+            // Validate the model
+            if (!ModelState.IsValid)
             {
-                logger.LogInformation("Creating a new tag: {TagName}", addTagDto.Name);
-
-                if (!ModelState.IsValid)
+                logger.LogError("Invalid model state for tag creation.");
+                return BadRequest(new ProblemDetails
                 {
-                    logger.LogError("Invalid model state for tag creation.");
-                    return BadRequest(ModelState);  // Returns validation error messages
-                }
-
-                var tagEntity = new Tag()
-                {
-                    Name = addTagDto.Name
-                };
-
-                dbContext.Tags.Add(tagEntity);
-                dbContext.SaveChanges();
-
-                logger.LogInformation("Tag created successfully with id: {TagId}", tagEntity.Id);
-                return Ok(tagEntity);
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Invalid request",
+                    Detail = "Tag data is not valid"
+                });
             }
-            catch (DbUpdateException ex)
+
+            // Create a new tag entity
+            var tagEntity = new Tag
             {
-                logger.LogError($"An error occurred while adding tag: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while adding the tag.");
-            }
+                Name = addTagDto.Name
+            };
+
+            // Add the new tag to the database and save changes
+            dbContext.Tags.Add(tagEntity);
+            dbContext.SaveChanges();
+
+            logger.LogInformation("Tag created successfully with id: {TagId}", tagEntity.Id);
+            return Ok(tagEntity);
         }
 
+        // PUT: api/tags/{id} - Update an existing tag
         [HttpPut]
         [Route("{id:guid}")]
         public IActionResult UpdateTag(Guid id, UpdateTagDto updateTagDto)
-        {
-            try 
-            { 
-                logger.LogInformation("Updating a tag: {TagName}", updateTagDto.Name);
+        {            
+            logger.LogInformation("Updating tag with id: {TagId}, Name: {TagName}", id, updateTagDto.Name);
 
-                var tag = dbContext.Tags.Find(id);
-                if (tag == null)
+            // Find the tag by its ID
+            var tag = dbContext.Tags.Find(id);
+            if (tag == null)
+            {                
+                logger.LogWarning("Tag with id: {TagId} was not found", id);
+                return NotFound(new ProblemDetails
                 {
-                    logger.LogWarning("Tag with id: {TagId} was not found", id);
-
-                    return NotFound();
-                }
-                tag.Name = updateTagDto.Name;
-
-                dbContext.SaveChanges();
-
-                logger.LogInformation("Tag updated successfully with id: {TagId}", tag.Id);
-
-                return Ok(tag);
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Tag not found",
+                    Detail = $"No tag found with ID: {id}"
+                });
             }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError($"An error occurred while updating the tag: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the tag.");
-            }
+
+            // Update the tag's name
+            tag.Name = updateTagDto.Name;
+            dbContext.SaveChanges();
+            
+            logger.LogInformation("Tag updated successfully with id: {TagId}", tag.Id);
+            return Ok(tag);
         }
 
+        // DELETE: api/tags/{id} - Delete a tag by its ID
         [HttpDelete]
         [Route("{id:guid}")]
         public IActionResult DeleteTag(Guid id)
         {
-            try
-            {
-                logger.LogInformation("Deleting a tag with Id: {TagId}", id);
+            logger.LogInformation("Deleting tag with id: {TagId}", id);
 
-                var tag = dbContext.Tags.Find(id);
-                if (tag == null)
+            // Find the tag by its ID
+            var tag = dbContext.Tags.Find(id);
+            if (tag == null)
+            {                
+                logger.LogWarning("Tag with id: {TagId} was not found", id);
+                return NotFound(new ProblemDetails
                 {
-                    logger.LogWarning("Tag with id: {TagId} was not found", id);
-
-                    return NotFound();
-                }
-
-                dbContext.Tags.Remove(tag);
-                dbContext.SaveChanges();
-
-                logger.LogInformation("Tag deleted successfully with id: {TagName}", tag.Name);
-
-
-                return Ok();
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Tag not found",
+                    Detail = $"No tag found with ID: {id}"
+                });
             }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError($"An error occurred while deleting the tag: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the tag.");
-            }
+
+            // Remove the tag from the database and save changes
+            dbContext.Tags.Remove(tag);
+            dbContext.SaveChanges();
+            
+            logger.LogInformation("Tag deleted successfully with id: {TagId}", id);
+            return Ok();
         }
-
     }
 }

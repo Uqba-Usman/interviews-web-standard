@@ -54,6 +54,9 @@ app.UseExceptionHandler(errorApp =>
 
         if (exceptionHandlerPathFeature?.Error != null)
         {
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError(exceptionHandlerPathFeature.Error, "An unhandled exception occurred.");
+
             var problemDetails = new ProblemDetails
             {
                 Status = StatusCodes.Status500InternalServerError,
@@ -66,8 +69,7 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-// Custom exception handling middleware
-//app.UseMiddleware<CustomExceptionHandlerMiddleware>();
+
 
 app.UseSerilogRequestLogging();
 

@@ -25,16 +25,16 @@
           <div class="task-detail-section">
             <h4 class="detail-heading">Assigned Tags</h4>
             <div class="tag-chips">
-              <span v-if="!task.tags || task.tags.length === 0">
+              <span v-if="!task?.tags || task?.tags?.length === 0">
                 No tags assigned to this task.
               </span>
               <router-link
                 v-for="tag in task.tags"
-                :key="tag.id"
-                to="/"
+                :key="tag?.tag?.id"
+                :to="`/tags/show/${tag?.tag?.id}`"
                 class="tag-chip clickable-chip"
               >
-                {{ tag.tag.name }}
+                {{ tag?.tag?.name }}
               </router-link>
             </div>
           </div>

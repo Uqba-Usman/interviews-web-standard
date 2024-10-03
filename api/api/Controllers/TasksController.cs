@@ -15,235 +15,244 @@ namespace api.Controllers
     {
         private readonly ApplicationDbContext dbContext;
         private readonly ILogger<TasksController> logger;
+
+        // Constructor to initialize DbContext and Logger
         public TasksController(ApplicationDbContext dbContext, ILogger<TasksController> logger)
         {
             this.dbContext = dbContext;
             this.logger = logger;
         }
 
+        // GET: api/tasks - Retrieve all tasks with their associated tags
         [HttpGet]
         public IActionResult GetAllTasks()
         {
-            try
-            {
-                //logger.LogInformation("Fetching all tasks");
-                logger.LogInformation(
-              "Starting Request {RequestMethod} {RequestPath} at {DateTimeUtc}",
-              HttpContext.Request.Method,
-              HttpContext.Request.Path,
-              DateTime.UtcNow);
+            logger.LogInformation(
+                "Fetching all tasks: {RequestMethod} {RequestPath} at {DateTimeUtc}",
+                HttpContext.Request.Method,
+                HttpContext.Request.Path,
+                DateTime.UtcNow
+            );
 
-                var allTasks = dbContext.Tasks
-                     .Include(t => t.TaskTags)
-                         .ThenInclude(tt => tt.Tag)
-                     .Select(task => new TaskWithTagsDto
-                     {
-                         Id = task.Id,
-                         Name = task.Name,
-                         Description = task.Description,
-                         Tags = task.TaskTags.Select(tt => new TagDto
-                         {
-                             Id = tt.Tag.Id,
-                             Name = tt.Tag.Name
-                         }).ToList()
-                     })
-                     .ToList();
+            // Query tasks and include related tags
+            var allTasks = dbContext.Tasks
+                .Include(t => t.TaskTags)
+                    .ThenInclude(tt => tt.Tag)
+                .Select(task => new TaskWithTagsDto
+                {
+                    Id = task.Id,
+                    Name = task.Name,
+                    Description = task.Description,
+                    Tags = task.TaskTags.Select(tt => new TagDto
+                    {
+                        Id = tt.Tag.Id,
+                        Name = tt.Tag.Name
+                    }).ToList()
+                })
+                .ToList();
+            
+            logger.LogInformation("Successfully retrieved {TaskCount} tasks", allTasks.Count);
 
-                return Ok(allTasks);
-            }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError($"An error occurred while getting the tasks: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while getting the tasks.");
-            }
+            return Ok(allTasks);
         }
 
-        [HttpGet]
-        [Route("{id:guid}")]
+        // GET: api/tasks/{id} - Retrieve a specific task by its ID
+        [HttpGet("{id:guid}")]
         public IActionResult GetTaskById(Guid id)
         {
-            try
-            {
-                logger.LogInformation("Fetching task with id: {TaskId}", id);
+            logger.LogInformation("Fetching task with ID: {TaskId}", id);
 
-                var task = dbContext.Tasks
-                            .Include(t => t.TaskTags)
-                                .ThenInclude(tt => tt.Tag)
-                            .FirstOrDefault(t => t.Id == id);
-                if (task == null)
-                {
-                    logger.LogWarning("Task with id: {TaskId} was not found", id);
-                    return NotFound();
-                }
-                return Ok(task);
-            }
-            catch (DbUpdateException ex)
+            // Find the task and include its related tags
+            var task = dbContext.Tasks
+                .Include(t => t.TaskTags)
+                    .ThenInclude(tt => tt.Tag)
+                .FirstOrDefault(t => t.Id == id);
+
+            if (task == null)
             {
-                logger.LogError($"An error occurred while getting a single task: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while getting a single task.");
+                logger.LogWarning("Task with ID: {TaskId} not found", id);
+                return NotFound(new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Task not found",
+                    Detail = $"No task found with ID: {id}"
+                });
             }
+
+            logger.LogInformation("Successfully retrieved task with ID: {TaskId}", id);
+            return Ok(task);
         }
 
+        // POST: api/tasks - Add a new task
         [HttpPost]
         public IActionResult AddTask(AddTaskDto addTaskDto)
         {
-            try
+            logger.LogInformation("Creating a new task: {TaskName}", addTaskDto.Name);
+
+            // Check if the model state is valid
+            if (!ModelState.IsValid)
             {
-                logger.LogInformation("Creating a new task: {TaskName}", addTaskDto.Name);
-
-                if (!ModelState.IsValid)
+                logger.LogError("Invalid model state for task creation.");
+                return BadRequest(new ProblemDetails
                 {
-                    logger.LogError("Invalid model state for task creation.");
-                    return BadRequest(ModelState);  // Returns validation error messages
-                }
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Invalid request",
+                    Detail = "Task data is not valid"
+                });
+            }
 
-                // Create the new task entity
-                var taskEntity = new Task()
+            // Create the task entity
+            var taskEntity = new Task
+            {
+                Name = addTaskDto.Name,
+                Description = addTaskDto.Description
+            };
+
+            // Handle tags if provided
+            var tags = new List<Tag>();
+            if (addTaskDto.TagIds != null && addTaskDto.TagIds.Any())
+            {
+                // Fetch tags from the database
+                tags = dbContext.Tags.Where(tag => addTaskDto.TagIds.Contains(tag.Id)).ToList();
+
+                // If not all tags were found, return a BadRequest
+                if (tags.Count != addTaskDto.TagIds.Count)
                 {
-                    Name = addTaskDto.Name,
-                    Description = addTaskDto.Description
-                };
-
-                // Find the tags by their IDs (if provided)
-                var tags = new List<Tag>();
-                if (addTaskDto.TagIds != null && addTaskDto.TagIds.Any())
-                {
-                    tags = dbContext.Tags.Where(tag => addTaskDto.TagIds.Contains(tag.Id)).ToList();
-
-                    // If some tag IDs do not exist, return an error
-                    if (tags.Count != addTaskDto.TagIds.Count)
+                    logger.LogWarning("One or more tags not found for task creation.");
+                    return BadRequest(new ProblemDetails
                     {
-                        return BadRequest("One or more tags do not exist.");
-                    }
+                        Status = StatusCodes.Status400BadRequest,
+                        Title = "Invalid request",
+                        Detail = "One or more tags do not exist."
+                    });
                 }
+            }
 
-                // Associate tags with the task via TaskTag
-                foreach (var tag in tags)
+            // Add the task-tag relationships
+            foreach (var tag in tags)
+            {
+                taskEntity.TaskTags.Add(new TaskTag
                 {
-                    taskEntity.TaskTags.Add(new TaskTag
+                    TaskId = taskEntity.Id,
+                    TagId = tag.Id,
+                    AddedOn = DateTime.UtcNow
+                });
+            }
+
+            // Save the task to the database
+            dbContext.Tasks.Add(taskEntity);
+            dbContext.SaveChanges();
+
+            logger.LogInformation("Task created successfully with ID: {TaskId}", taskEntity.Id);
+            return Ok(taskEntity);
+        }
+
+        // PUT: api/tasks/{id} - Update an existing task
+        [HttpPut("{id:guid}")]
+        public IActionResult UpdateTask(Guid id, UpdateTaskDto updateTaskDto)
+        {
+            logger.LogInformation("Updating task with ID: {TaskId}", id);
+
+            // Find the task to update
+            var task = dbContext.Tasks.Find(id);
+            if (task == null)
+            {
+                logger.LogWarning("Task with ID: {TaskId} not found for update", id);
+                return NotFound(new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Task not found",
+                    Detail = $"No task found with ID: {id}"
+                });
+            }
+
+            // Update the task's properties
+            task.Name = updateTaskDto.Name;
+            task.Description = updateTaskDto.Description;
+            dbContext.SaveChanges();
+
+            logger.LogInformation("Task updated successfully with ID: {TaskId}", id);
+            return Ok(task);
+        }
+
+        // DELETE: api/tasks/{id} - Delete a task by its ID
+        [HttpDelete("{id:guid}")]
+        public IActionResult DeleteTask(Guid id)
+        {
+            logger.LogInformation("Deleting task with ID: {TaskId}", id);
+
+            // Find the task to delete
+            var task = dbContext.Tasks.Find(id);
+            if (task == null)
+            {
+                logger.LogWarning("Task with ID: {TaskId} not found for deletion", id);
+                return NotFound(new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Task not found",
+                    Detail = $"No task found with ID: {id}"
+                });
+            }
+
+            // Delete the task and save changes
+            dbContext.Tasks.Remove(task);
+            dbContext.SaveChanges();
+
+            logger.LogInformation("Task deleted successfully with ID: {TaskId}", id);
+            return Ok();
+        }
+
+        // POST: api/tasks/{id}/tags - Add tags to an existing task
+        [HttpPost("{id:guid}/tags")]
+        public IActionResult AddTagsToTask(Guid id, [FromBody] AddTagsToTaskDto addTagsToTaskDto)
+        {
+            logger.LogInformation("Adding tags to task with ID: {TaskId}", id);
+
+            // Find the task and include existing tags
+            var task = dbContext.Tasks.Include(t => t.TaskTags).FirstOrDefault(t => t.Id == id);
+            if (task == null)
+            {
+                logger.LogWarning("Task with ID: {TaskId} not found for tag addition", id);
+                return NotFound(new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Task not found",
+                    Detail = $"No task found with ID: {id}"
+                });
+            }
+
+            // Fetch the tags to be added
+            var tags = dbContext.Tags.Where(tag => addTagsToTaskDto.TagIds.Contains(tag.Id)).ToList();
+            if (tags.Count != addTagsToTaskDto.TagIds.Count)
+            {
+                logger.LogWarning("One or more tags not found for task with ID: {TaskId}", id);
+                return BadRequest(new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Invalid request",
+                    Detail = "One or more tags do not exist"
+                });
+            }
+
+            // Add new tags to the task, if not already associated
+            foreach (var tag in tags)
+            {
+                if (!task.TaskTags.Any(tt => tt.TagId == tag.Id))
+                {
+                    task.TaskTags.Add(new TaskTag
                     {
-                        TaskId = taskEntity.Id,
+                        TaskId = task.Id,
                         TagId = tag.Id,
                         AddedOn = DateTime.UtcNow
                     });
                 }
-
-                // Add the task to the database
-                dbContext.Tasks.Add(taskEntity);
-                dbContext.SaveChanges();
-
-                logger.LogInformation("Task created successfully with id: {TaskId}", taskEntity.Id);
-                return Ok(taskEntity);
             }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError($"An error occurred while creating the task: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while creating the task.");
-            }
-        }
 
-        [HttpPut]
-        [Route("{id:guid}")]
-        public IActionResult UpdateTask(Guid id, UpdateTaskDto updateTaskDto)
-        {
-            try
-            {
-                logger.LogInformation("Updating a task: {TaskName}", updateTaskDto.Name);
+            // Save the updated task
+            dbContext.SaveChanges();
+            logger.LogInformation("Tags added successfully to task with ID: {TaskId}", id);
 
-                var task = dbContext.Tasks.Find(id);
-                if (task == null)
-                {
-                    logger.LogWarning("Task with id: {TaskId} was not found", id);
-                    return NotFound();
-                }
-                task.Name = updateTaskDto.Name;
-                task.Description = updateTaskDto.Description;
-
-                dbContext.SaveChanges();
-
-                logger.LogInformation("Task updated successfully with id: {TaskId}", task.Id);
-                return Ok(task);
-            }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError($"An error occurred while updating the task: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the task.");
-            }
-        }
-
-        [HttpDelete]
-        [Route("{id:guid}")]
-        public IActionResult DeleteTask(Guid id)
-        {
-            try
-            {
-                logger.LogInformation("Deleting a task with Id: {TaskId}", id);
-                var task = dbContext.Tasks.Find(id);
-                if (task == null)
-                {
-                    logger.LogWarning("Task with id: {TaskId} was not found", id);
-                    return NotFound();
-                }
-
-                dbContext.Tasks.Remove(task);
-                dbContext.SaveChanges();
-
-                logger.LogInformation("Task deleted successfully with id: {TaskName}", task.Name);
-
-                return Ok();
-            }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError($"An error occurred while deleting the task: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the task.");
-            }
-        }
-
-        [HttpPost]
-        [Route("{id:guid}/tags")]
-        public IActionResult AddTagsToTask(Guid id, [FromBody] AddTagsToTaskDto addTagsToTaskDto)
-        {
-            try
-            {
-                logger.LogInformation("AddTagsToTask a task: {TaskName}", addTagsToTaskDto);
-                logger.LogInformation("AddTagsToTask a task: {id}", id);
-                // Find the task
-                var task = dbContext.Tasks.Include(t => t.TaskTags).FirstOrDefault(t => t.Id == id);
-                if (task == null)
-                {
-                    return NotFound();
-                }
-
-                // Find the tags by their IDs
-                var tags = dbContext.Tags.Where(tag => addTagsToTaskDto.TagIds.Contains(tag.Id)).ToList();
-                if (tags.Count != addTagsToTaskDto.TagIds.Count)
-                {
-                    return BadRequest("One or more tags do not exist.");
-                }
-
-                // Associate tags with the task via TaskTag
-                foreach (var tag in tags)
-                {
-                    if (!task.TaskTags.Any(tt => tt.TagId == tag.Id))
-                    {
-                        task.TaskTags.Add(new TaskTag
-                        {
-                            TaskId = task.Id,
-                            TagId = tag.Id,
-                            AddedOn = DateTime.UtcNow
-                        });
-                    }
-                }
-
-                dbContext.SaveChanges();
-
-                return Ok(task);
-            }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError($"An error occurred while associating tag with a task: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while associating tag with a task.");
-            }
+            return Ok(task);
         }
     }
 }
