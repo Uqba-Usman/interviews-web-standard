@@ -1,5 +1,6 @@
 <template>
   <div class="container top-container">
+    <!-- Header section with back button and title -->
     <div class="create-task-container">
       <div
         class="create-task-header d-flex align-items-center justify-content-start"
@@ -10,6 +11,7 @@
         <h2 class="text-center flex-grow-1">Create New Task</h2>
       </div>
 
+      <!-- Form card for creating a new task -->
       <div class="card create-task-card">
         <div class="card-body">
           <form @submit.prevent="handleSave">
@@ -27,9 +29,7 @@
             </div>
 
             <div class="form-group">
-              <label for="description" class="form-label"
-                >Task Description</label
-              >
+              <label for="description" class="form-label">Task Description</label>
               <textarea
                 v-model="task.description"
                 class="form-control"
@@ -41,10 +41,11 @@
               ></textarea>
             </div>
 
+            <!-- Tag selection using multiselect dropdown -->
             <div class="form-group">
               <label for="tags" class="form-label">Tags</label>
               <div class="tag-chips mb-3">
-                <!-- <span v-if="task.tags.length === 0">No tags assigned yet.</span> -->
+                <!-- Display selected tags -->
                 <span v-for="tag in task.tags" :key="tag.id" class="tag-chip">{{
                   tag.name
                 }}</span>
@@ -104,20 +105,21 @@ export default {
   data() {
     return {
       task: {
-        name: "",
-        description: "",
-        tags: [],
+        name: "", 
+        description: "", 
+        tags: [], 
       },
-      loading: true,
-      selectedTags: [],
-      tags: [],
-      isSaving: false,
+      loading: true, 
+      selectedTags: [], 
+      tags: [], 
+      isSaving: false, 
     };
   },
   created() {
-    this.fetchTags();
+    this.fetchTags(); 
   },
   methods: {
+    // Fetch tags from the server
     fetchTags() {
       getTags()
         .then((response) => {
@@ -133,6 +135,7 @@ export default {
           });
         });
     },
+    // Handle form submission to create a task
     handleSave() {
       this.isSaving = true;
       this.task.tagIds = this.selectedTags.map((tag) => tag.id);
@@ -146,11 +149,12 @@ export default {
             timer: 1500,
           });
 
+          
           this.task = { name: "", description: "", tags: [] };
           this.selectedTags = [];
           this.isSaving = false;
 
-          this.$router.go(-1);
+          this.$router.go(-1); 
         })
         .catch((error) => {
           console.error(error);
@@ -163,9 +167,11 @@ export default {
           this.isSaving = false;
         });
     },
+    // Go back to the previous page
     goBack() {
       this.$router.go(-1);
     },
+    // Create a new tag on the fly
     createTag() {
       Swal.fire({
         title: "Create new tag",
@@ -175,6 +181,7 @@ export default {
           if (!value) {
             return "Tag name cannot be empty!";
           }
+          // Add new tag to the tags array
           this.tags.push({ id: this.tags.length + 1, name: value });
         },
       });
@@ -184,10 +191,12 @@ export default {
 </script>
 
 <style scoped>
+/* Container margin */
 .top-container {
   margin-top: 5rem;
 }
 
+/* Header styles */
 .create-task-header {
   display: flex;
   align-items: center;
@@ -199,6 +208,7 @@ export default {
   margin-bottom: 25px;
 }
 
+/* Title styles */
 .create-task-header h2 {
   margin: 0;
   font-size: 1.5rem;
@@ -207,6 +217,7 @@ export default {
   text-align: center;
 }
 
+/* Back button styles */
 .back-icon {
   margin-right: 10px;
   font-size: 24px;
@@ -223,17 +234,13 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.back-icon:hover {
-  background-color: #052e82;
-  color: white;
-}
-
 .back-icon img {
   width: 20px;
   height: 20px;
   filter: invert(1);
 }
 
+/* Card styles for the form */
 .create-task-card {
   margin-top: -20px;
   border-radius: 12px;
@@ -242,6 +249,7 @@ export default {
   padding: 20px;
 }
 
+/* Input field styles */
 .form-control {
   border: none;
   border-radius: 8px;
@@ -250,10 +258,7 @@ export default {
   margin-bottom: 20px;
 }
 
-.form-label {
-  margin: 5px;
-}
-
+/* Save button styles */
 .btn-save-task {
   background-color: #052e82;
   color: white;
@@ -268,6 +273,7 @@ export default {
   background-color: #3a3f6a;
 }
 
+/* Tag chip styling */
 .tag-chips {
   display: flex;
   flex-wrap: wrap;
